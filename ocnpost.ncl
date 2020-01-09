@@ -97,11 +97,14 @@ begin
    output_masks = False
 
    ; specify a location to use
-       nemsrc     = "/scratch4/NCEPDEV/ocean/save/Denise.Worthen/NEMS_INPUT0.1/ocnicepost/"
+       nemsrc     = "/scratch2/NCEPDEV/climate/Denise.Worthen/TTout/"
    ; interpolation methods
    methods        = (/"bilinear" ,"conserve"/)
    ; ocean model output location 
-           dirsrc = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/BM1_ocn/"
+           ;dirsrc = "/scratch2/NCEPDEV/climate/Jiande.Wang/Z-work4/BM3-ocean-output/monthly-mean/"
+           dirsrc = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/ForJiande/"
+   ; regridded ocean model output location 
+           dirout = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/ForJiande/"
 
    ; destination grid sizes and name
       dsttype     = (/"rect."/)
@@ -157,9 +160,7 @@ begin
 ; make a list of the directories and files from the run 
 ;----------------------------------------------------------------------
 
-   idate = "20120101"
-
-   ocnfilelist = systemfunc("ls "+dirsrc+"gfs."+idate+"/00/"+"ocn*.nc")
+   ocnfilelist = systemfunc("ls "+dirsrc+"ocn*.nc")
           ocnf = addfiles(ocnfilelist,"r")
         nfiles = dimsizes(ocnfilelist)
 
@@ -265,8 +266,8 @@ begin
 ; loop over each file in the ocnfilelist
 ;----------------------------------------------------------------------
 
-   do ii = 0,2
-   ;do ii = 0,nfiles-1
+   ;do ii = 0,2
+   do ii = 0,nfiles-1
      infile = ocnfilelist(ii)
     print("working on "+infile)
     ; create the output file name
@@ -282,11 +283,12 @@ begin
     ; insert an 'r' after the leading occurence of 'ocn' 
     ; to indicate regular grid
     outfile = str_insert(outfile,"r",indstr+3)
+    print(outfile)
     ; check if the outgrid directory exists and create
     ; it if it does not
-    ret = systemfunc("test -d "+dirsrc+"gfs."+idate+"/00/"+outgrid+"; echo $?")
+    ret = systemfunc("test -d "+dirsrc+outgrid+"; echo $?")
     if(ret .eq. 1)then
-     system("mkdir "+dirsrc+"gfs."+idate+"/00/"+outgrid)
+     system("mkdir "+dirsrc+outgrid)
     end if
 
     ; retrieve the time stamp
@@ -310,16 +312,15 @@ begin
     fileattdef( outcdf, fAtt )           ; copy file attributes    
 
     ; predefine the coordinate variables and their dimensionality
-    dimNames = (/"time", "z_l",   "z_i",  "z_T",  "lat", "lon"/)  
-    dimSizes = (/ -1   , nlevs, nlevs+1,    nTd,   nlat,  nlon/) 
-    dimUnlim = (/ True , False,   False,  False,  False, False/)   
+    dimNames = (/"time", "z_l",   "z_i",   "lat", "lon"/)  
+    dimSizes = (/ -1   , nlevs, nlevs+1,    nlat,  nlon/) 
+    dimUnlim = (/ True , False,   False,   False, False/)   
     filedimdef(outcdf,dimNames,dimSizes,dimUnlim)
 
     ; predefine the the dimensionality of the variables to be written out
     filevardef(outcdf,  "time", typeof(time), getvardims(time)) 
     filevardef(outcdf,   "z_l",  typeof(z_l),  getvardims(z_l))                           
     filevardef(outcdf,   "z_i",  typeof(z_i),  getvardims(z_i))
-    filevardef(outcdf,   "z_T",  typeof(z_T),  getvardims(z_T))
     filevardef(outcdf,   "lat",  typeof(lat),  getvardims(lat))                          
     filevardef(outcdf,   "lon",  typeof(lon),  getvardims(lon))                          
 
@@ -327,7 +328,6 @@ begin
     filevarattdef(outcdf, "time", time)                 
     filevarattdef(outcdf,  "z_l",  z_l)               
     filevarattdef(outcdf,  "z_i",  z_i)               
-    filevarattdef(outcdf,  "z_T",  z_T)               
     filevarattdef(outcdf,  "lat",  lat)             
     filevarattdef(outcdf,  "lon",  lon)            
 
@@ -370,7 +370,6 @@ begin
     outcdf->time   = (/time/)     
     outcdf->z_l    = (/z_l/)     
     outcdf->z_i    = (/z_i/)     
-    outcdf->z_T    = (/z_T/)     
     outcdf->lat    = (/lat/)
     outcdf->lon    = (/lon/) 
 
