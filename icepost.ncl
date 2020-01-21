@@ -16,23 +16,27 @@ begin
     output_masks = True
 
    ; specify a location to use
-       nemsrc     = "/scratch4/NCEPDEV/ocean/save/Denise.Worthen/NEMS_INPUT0.1/ocnicepost/"
+       nemsrc     = "/scratch2/NCEPDEV/climate/Denise.Worthen/TTout/"
    ; interpolation methods
    methods        = (/"bilinear" ,"conserve"/)
-   ; ocean model output location 
-           dirsrc = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/BM1_ice/"
+   ; model source location 
+   ;        dirsrc = "/scratch1/NCEPDEV/global/Shrinivas.Moorthi/noscrub/cpl_runs/cont/"
+           dirsrc = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/cpl_runs/rest/"
+   ; model output location 
+           dirout = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/cpl_runs/rest/"
 
    ; destination grid sizes and name
       dsttype     = (/"rect."/)
-      dstgrds     = (/"1p0", "0p5", "0p25"/)
+      ;dstgrds     = (/"1p0", "0p5", "0p25"/)
+      dstgrds     = (/"0p25"/)
 
    ; variables to be regridded with the native tripole stagger location
 
-   varlist = (/ (/     "hi_h", "Ct", "bilinear"/) \
-               ,(/     "hs_h", "Ct", "bilinear"/) \
-               ,(/   "Tsfc_h", "Ct", "bilinear"/) \
-               ,(/   "aice_h", "Ct", "bilinear"/) \
-               ,(/    "sst_h", "Ct", "bilinear"/) \
+   varlist = (/ (/     "hi", "Ct", "bilinear"/) \
+               ,(/     "hs", "Ct", "bilinear"/) \
+               ,(/   "Tsfc", "Ct", "bilinear"/) \
+               ,(/   "aice", "Ct", "bilinear"/) \
+               ,(/    "sst", "Ct", "bilinear"/) \
              /)
      dims = dimsizes(varlist)
     nvars = dims(0)
@@ -45,7 +49,7 @@ begin
     ; be remapped using conservative
    nvpairs = 1
    veclist = new( (/nvpairs,3,2/),"string")
-   veclist = (/ (/ (/"uvel_h", "vvel_h"/), (/"Bu", "Bu"/), (/"bilinear", "bilinear"/) /) \
+   veclist = (/ (/ (/"uvel", "vvel"/), (/"Bu", "Bu"/), (/"bilinear", "bilinear"/) /) \
              /)
    ;print(veclist)
 
@@ -54,9 +58,9 @@ begin
 ; make a list of the directories and files from the run 
 ;----------------------------------------------------------------------
 
-   idate = "20121001"
+   idate = "2018-09-01"
 
-   icefilelist = systemfunc("ls "+dirsrc+"gfs."+idate+"/00/"+"ice*.nc")
+   icefilelist = systemfunc("ls "+dirsrc+"iceh*.nc")
           icef = addfiles(icefilelist,"r")
         nfiles = dimsizes(icefilelist)
 
@@ -65,7 +69,7 @@ begin
 
   ; get a 2 dimensional fields for creating the interpolation mask
   ; the mask2d contain 1's on land and 0's at valid points.
-  mask2d = where(ismissing(icef[0]->sst_h),  1.0, 0.0)
+  mask2d = where(ismissing(icef[0]->sst),  1.0, 0.0)
   ;printVarSummary(mask2d)
 
   ; create conformed rotation arrays to make vector rotations cleaner
@@ -124,8 +128,8 @@ begin
 ; loop over each file in the icefilelist
 ;----------------------------------------------------------------------
 
-   do ii = 0,2
-   ;do ii = 0,nfiles-1
+   ;do ii = 0,2
+   do ii = 0,nfiles-1
      infile = icefilelist(ii)
      print("working on "+infile)
     ; create the output file name
@@ -140,12 +144,12 @@ begin
      indstr = str_index_of_substr(outfile, "ice", -1)
     ; insert an 'r' after the leading occurence of 'ice' 
     ; to indicate regular grid
-    outfile = str_insert(outfile,"r",indstr+3)
+    ;outfile = str_insert(outfile,"r",indstr+3)
     ; check if the outgrid directory exists and create
     ; it if it does not
-    ret = systemfunc("test -d "+dirsrc+"gfs."+idate+"/00/"+outgrid+"; echo $?")
+    ret = systemfunc("test -d "+dirout+outgrid+"; echo $?")
     if(ret .eq. 1)then
-     system("mkdir "+dirsrc+"gfs."+idate+"/00/"+outgrid)
+     system("mkdir "+dirout+outgrid)
     end if
 
     ; retrieve the time stamp
