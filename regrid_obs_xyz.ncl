@@ -32,8 +32,8 @@ begin
    olons = obsf->$obslonname$
    olats = obsf->$obslatname$
    odpts = obsf->$obsdptname$
-    time = obsf->time
 
+    time = modf->time
    mlons = modf->$modlonname$
    mlats = modf->$modlatname$
    mdpts = modf->$moddptname$
@@ -114,8 +114,8 @@ begin
    rgsz = linint1_n_Wrap(odpts,rgs,False,mdpts,0,1)
   ; printVarSummary(rgtz)
   ; patch k=1
-  rgtz(:,0,:,:) = rgt(:,0,:,:)
-  rgsz(:,0,:,:) = rgs(:,0,:,:)
+  rgtz(:,0,:,:) = (/rgt(:,0,:,:)/)
+  rgsz(:,0,:,:) = (/rgs(:,0,:,:)/)
 
   ; enter file definition mode to add variable attributes
   setfileoption(outcdf,"DefineMode",True)
