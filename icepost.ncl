@@ -1,11 +1,11 @@
 ;------------------------------------------------------------------
 ; Denise.Worthen@noaa.gov (Feb 2019)
 ;
-; This script will remap CICE5 output on the tripole grid to 
-; a set of rectilinear grids using pre-computed ESMF weights to remap 
-; the listed fields to the destination grid and write the results 
+; This script will remap CICE5 output on the tripole grid to
+; a set of rectilinear grids using pre-computed ESMF weights to remap
+; the listed fields to the destination grid and write the results
 ; to a new netCDF file
-; 
+;
 ; See ocnpost.ncl for a complete description
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
@@ -19,7 +19,7 @@ begin
        nemsrc     = "/scratch4/NCEPDEV/ocean/save/Denise.Worthen/NEMS_INPUT0.1/ocnicepost/"
    ; interpolation methods
    methods        = (/"bilinear" ,"conserve"/)
-   ; ocean model output location 
+   ; ocean model output location
            dirsrc = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/BM1_ice/"
 
    ; destination grid sizes and name
@@ -40,7 +40,7 @@ begin
    ;print(varlist)
 
     ; vectors to be regridded with the native tripole stagger location
-    ; and dimensionality 
+    ; and dimensionality
     ; note: vectors are always unstaggered using bilinear weights, but can
     ; be remapped using conservative
    nvpairs = 1
@@ -51,7 +51,7 @@ begin
 
    begTime = get_cpu_time()
 ;----------------------------------------------------------------------
-; make a list of the directories and files from the run 
+; make a list of the directories and files from the run
 ;----------------------------------------------------------------------
 
    idate = "20121001"
@@ -60,7 +60,7 @@ begin
           icef = addfiles(icefilelist,"r")
         nfiles = dimsizes(icefilelist)
 
-  ; get the rotation angle 
+  ; get the rotation angle
     angleT = icef[0]->ANGLET
 
   ; get a 2 dimensional fields for creating the interpolation mask
@@ -69,10 +69,10 @@ begin
   ;printVarSummary(mask2d)
 
   ; create conformed rotation arrays to make vector rotations cleaner
-  angleT2d=conform_dims(dimsizes(mask2d),angleT,(/1,2/)) 
+  angleT2d=conform_dims(dimsizes(mask2d),angleT,(/1,2/))
 
 ;----------------------------------------------------------------------
-; loop over the output resolutions 
+; loop over the output resolutions
 ;----------------------------------------------------------------------
 
       jj = 1
@@ -98,9 +98,9 @@ begin
      delete(tt)
      delete(dims)
 
-    ; regrid the masks to obtain the interpolation masks. 
+    ; regrid the masks to obtain the interpolation masks.
     ; the mask2d contain 1's on land and 0's at valid points.
-    ; when remapped, any mask value > 0 identifies land values that 
+    ; when remapped, any mask value > 0 identifies land values that
     ; have crept into the field. remapped model fields are then
     ; masked with this interpolation mask
 
@@ -138,7 +138,7 @@ begin
     outfile = str_insert(outfile,outres,-4)
     ; find the index where the actual filename begins
      indstr = str_index_of_substr(outfile, "ice", -1)
-    ; insert an 'r' after the leading occurence of 'ice' 
+    ; insert an 'r' after the leading occurence of 'ice'
     ; to indicate regular grid
     outfile = str_insert(outfile,"r",indstr+3)
     ; check if the outgrid directory exists and create
@@ -165,24 +165,24 @@ begin
     ; create global attributes of the file
     fAtt               = True            ; assign file attributes
     fAtt@creation_date = systemfunc ("date")
-    fAtt@source_file   = infile        
-    fileattdef( outcdf, fAtt )           ; copy file attributes    
+    fAtt@source_file   = infile
+    fileattdef( outcdf, fAtt )           ; copy file attributes
 
     ; predefine the coordinate variables and their dimensionality
-    dimNames = (/"time", "lat", "lon"/)  
-    dimSizes = (/ -1   ,  nlat,  nlon/) 
-    dimUnlim = (/ True , False, False/)   
+    dimNames = (/"time", "lat", "lon"/)
+    dimSizes = (/ -1   ,  nlat,  nlon/)
+    dimUnlim = (/ True , False, False/)
     filedimdef(outcdf,dimNames,dimSizes,dimUnlim)
 
     ; predefine the the dimensionality of the variables to be written out
-    filevardef(outcdf, "time", typeof(time), getvardims(time)) 
-    filevardef(outcdf,  "lat",  typeof(lat),  getvardims(lat))                          
-    filevardef(outcdf,  "lon",  typeof(lon),  getvardims(lon))                          
+    filevardef(outcdf, "time", typeof(time), getvardims(time))
+    filevardef(outcdf,  "lat",  typeof(lat),  getvardims(lat))
+    filevardef(outcdf,  "lon",  typeof(lon),  getvardims(lon))
 
     ; Copy attributes associated with each variable to the file
-    filevarattdef(outcdf, "time", time)                 
-    filevarattdef(outcdf,  "lat",  lat)             
-    filevarattdef(outcdf,  "lon",  lon)            
+    filevarattdef(outcdf, "time", time)
+    filevarattdef(outcdf,  "lat",  lat)
+    filevarattdef(outcdf,  "lon",  lon)
 
     ; predefine variables
     do nv = 0,nvars-1
@@ -198,7 +198,7 @@ begin
      vecname = veclist(nv,0,nn)
       odims = (/"time", "lat", "lon"/)
      ;print("creating variable "+vecname+" in file")
-     filevardef(outcdf, vecname, "float", odims) 
+     filevardef(outcdf, vecname, "float", odims)
      delete(odims)
      end do
     end do
@@ -207,9 +207,9 @@ begin
     setfileoption(outcdf,"DefineMode",False)
 
     ; write the dimensions to the file
-    outcdf->time   = (/time/)     
+    outcdf->time   = (/time/)
     outcdf->lat    = (/lat/)
-    outcdf->lon    = (/lon/) 
+    outcdf->lon    = (/lon/)
 
 ;----------------------------------------------------------------------
 ; loop over nvars variables
@@ -241,7 +241,7 @@ begin
 
      ; enter file definition mode to add variable attributes
      setfileoption(outcdf,"DefineMode",True)
-     filevarattdef(outcdf, varname, rgtt)                 
+     filevarattdef(outcdf, varname, rgtt)
      setfileoption(outcdf,"DefineMode",False)
 
      outcdf->$varname$   = (/rgtt/)
@@ -314,7 +314,7 @@ begin
 
       ; enter file definition mode to add variable attributes
       setfileoption(outcdf,"DefineMode",True)
-      filevarattdef(outcdf, vecnames(n), rgtt)                 
+      filevarattdef(outcdf, vecnames(n), rgtt)
       setfileoption(outcdf,"DefineMode",False)
     
       outcdf->$vecnames(n)$   = (/rgtt/)

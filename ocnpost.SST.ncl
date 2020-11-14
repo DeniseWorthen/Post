@@ -1,7 +1,7 @@
 ;------------------------------------------------------------------
 ; Denise.Worthen@noaa.gov (Feb 2019)
 ;
-; This is a version of ocnpost.ncl which remaps only the 
+; This is a version of ocnpost.ncl which remaps only the
 ; daily SST files
 ;
   load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
@@ -13,7 +13,7 @@ begin
        nemsrc     = "/scratch4/NCEPDEV/ocean/save/Denise.Worthen/NEMS_INPUT0.1/ocnicepost/"
    ; interpolation methods
    methods        = (/"bilinear" ,"conserve"/)
-   ; ocean model output location 
+   ; ocean model output location
            dirsrc = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/BM1_ocn/"
 
    ; destination grid sizes and name
@@ -21,7 +21,7 @@ begin
       dstgrds     = (/"1p0", "0p5", "0p25"/)
 
    ; variables to be regridded with the native tripole stagger location
-   ; and dimensionality 
+   ; and dimensionality
    
    varlist = (/ (/ "sst", "Ct", "bilinear", "2"/) \
              /)
@@ -33,12 +33,12 @@ begin
 
    begTime = get_cpu_time()
 ;----------------------------------------------------------------------
-; make a list of the directories and files from the run 
+; make a list of the directories and files from the run
 ;----------------------------------------------------------------------
 
    idate = "20120101"
 
-   ocnfilelist = systemfunc("ls "+dirsrc+"gfs."+idate+"/00/"+"SST*.nc") 
+   ocnfilelist = systemfunc("ls "+dirsrc+"gfs."+idate+"/00/"+"SST*.nc")
           ocnf = addfiles(ocnfilelist,"r")
         nfiles = dimsizes(ocnfilelist)
 
@@ -48,7 +48,7 @@ begin
   ;printVarSummary(mask2d)
 
 ;----------------------------------------------------------------------
-; loop over the output resolutions 
+; loop over the output resolutions
 ;----------------------------------------------------------------------
 
       jj = 1
@@ -74,9 +74,9 @@ begin
      delete(tt)
      delete(dims)
 
-    ; regrid the masks to obtain the interpolation masks. 
+    ; regrid the masks to obtain the interpolation masks.
     ; the mask2d contain 1's on land and 0's at valid points.
-    ; when remapped any mask value > 0, identifies land values that 
+    ; when remapped any mask value > 0, identifies land values that
     ; have crept into the field. remapped model fields are then
     ; masked with this interpolation mask
 
@@ -104,7 +104,7 @@ begin
     outfile = str_insert(outfile,outres,-4)
     ; find the index where the actual filename begins
      indstr = str_index_of_substr(outfile, "SST", -1)
-    ; insert an 'r' after the leading occurence of 'SST' 
+    ; insert an 'r' after the leading occurence of 'SST'
     ; to indicate regular grid
     outfile = str_insert(outfile,"r",indstr+3)
     ; check if the outgrid directory exists and create
@@ -132,25 +132,25 @@ begin
     fAtt               = True            ; assign file attributes
     fAtt@creation_date = systemfunc ("date")
     fAtt@source_file   = infile
-    fileattdef( outcdf, fAtt )           ; copy file attributes    
+    fileattdef( outcdf, fAtt )           ; copy file attributes
 
     ; predefine the coordinate variables and their dimensionality
-    dimNames = (/"time", "lat", "lon"/)  
-    dimSizes = (/ -1   ,  nlat,  nlon/) 
-    dimUnlim = (/ True , False, False/)   
+    dimNames = (/"time", "lat", "lon"/)
+    dimSizes = (/ -1   ,  nlat,  nlon/)
+    dimUnlim = (/ True , False, False/)
     filedimdef(outcdf,dimNames,dimSizes,dimUnlim)
 
     ; predefine the the dimensionality of the variables to be written out
-    filevardef(outcdf, "time", typeof(time), getvardims(time)) 
-    filevardef(outcdf,  "lat",  typeof(lat),  getvardims(lat))                          
-    filevardef(outcdf,  "lon",  typeof(lon),  getvardims(lon))                          
+    filevardef(outcdf, "time", typeof(time), getvardims(time))
+    filevardef(outcdf,  "lat",  typeof(lat),  getvardims(lat))
+    filevardef(outcdf,  "lon",  typeof(lon),  getvardims(lon))
 
     ; Copy attributes associated with each variable to the file
-    filevarattdef(outcdf, "time", time)                 
-    filevarattdef(outcdf,  "lat",  lat)             
-    filevarattdef(outcdf,  "lon",  lon)            
+    filevarattdef(outcdf, "time", time)
+    filevarattdef(outcdf,  "lat",  lat)
+    filevarattdef(outcdf,  "lon",  lon)
 
-    ; there is only 1 variable 
+    ; there is only 1 variable
      varname = varlist(0)
      vardims = varlist(3)
       odims = (/"time", "lat", "lon"/)
@@ -162,9 +162,9 @@ begin
     setfileoption(outcdf,"DefineMode",False)
 
     ; write the dimensions to the file
-    outcdf->time   = (/time/)     
+    outcdf->time   = (/time/)
     outcdf->lat    = (/lat/)
-    outcdf->lon    = (/lon/) 
+    outcdf->lon    = (/lon/)
 
 ;----------------------------------------------------------------------
 ;
@@ -195,13 +195,13 @@ begin
 
      ; enter file definition mode to add variable attributes
      setfileoption(outcdf,"DefineMode",True)
-     filevarattdef(outcdf, varname, rgtt)                 
+     filevarattdef(outcdf, varname, rgtt)
      setfileoption(outcdf,"DefineMode",False)
 
      outcdf->$varname$   = (/rgtt/)
 
      delete(ocnvar)
-     delete(rgtt) 
+     delete(rgtt)
     
 ;----------------------------------------------------------------------
 ; close the outcdf and continue through filelist
